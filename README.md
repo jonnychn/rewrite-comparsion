@@ -8,13 +8,15 @@ Black and white, Notion-inspired, no build step, no account, no network calls.
 
 ## Running it
 
-Any static file server works — there is nothing to compile:
+`index.html` is fully self-contained — CSS and JavaScript are inlined, so
+there are no sibling files to fetch. Double-click it, drop it on a static
+host, or open it from anywhere; it works offline and over `file://`.
+
+To change the tool, edit the files in `src/` and rebuild:
 
 ```bash
-npx http-server .    # or: python3 -m http.server
+node build.js    # regenerates index.html from src/
 ```
-
-Then open the printed URL. Opening `index.html` directly from disk works too.
 
 ## What it does
 
@@ -42,10 +44,12 @@ Then open the printed URL. Opening `index.html` directly from disk works too.
 
 | File | What's in it |
 | --- | --- |
-| `index.html` | Page structure: hero, editor/diff canvas, control panel |
-| `styles.css` | All styling, including the diff marks and the responsive rules |
-| `diff.js` | The diff engine — pure functions, no DOM, usable on its own |
-| `app.js` | UI wiring, demo copy, stats, navigation, clipboard |
+| `index.html` | **The build output.** Self-contained page — do not edit by hand |
+| `src/index.template.html` | Page structure: hero, editor/diff canvas, control panel |
+| `src/styles.css` | All styling, including the diff marks and the responsive rules |
+| `src/diff.js` | The diff engine — pure functions, no DOM, usable on its own |
+| `src/app.js` | UI wiring, demo copy, stats, navigation, clipboard |
+| `build.js` | Inlines `src/` into `index.html` |
 
 `diff.js` exposes `Redline.compare(original, updated, options)` and returns
 aligned rows plus a stats object, so it can be reused headlessly:
@@ -57,4 +61,5 @@ const { rows, stats } = Redline.compare(a, b, { granularity: 'word' });
 ## Privacy
 
 Text never leaves the browser. There is no analytics, no storage, and no
-network request beyond the optional web font.
+network request beyond the optional web font, which the page renders fine
+without.

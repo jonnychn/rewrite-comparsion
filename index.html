@@ -8,7 +8,649 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css" />
+<style>
+/* ============================================================
+   Redline — black & white, Notion-inspired comparison tool
+   ============================================================ */
+
+:root {
+  --ink:          #111111;
+  --ink-2:        #37352f;
+  --muted:        #6b6b6b;
+  --muted-2:      #9a9a9a;
+  --line:         #e6e6e6;
+  --line-strong:  #d5d5d5;
+  --paper:        #ffffff;
+  --paper-2:      #fafafa;
+  --paper-3:      #f4f4f3;
+  --wash:         #f7f7f6;
+  --del-bg:       #f0f0ef;
+  --ins-bg:       #e4e4e2;
+  --radius:       14px;
+  --radius-sm:    9px;
+  --shadow:       0 1px 2px rgba(0,0,0,.05), 0 8px 28px rgba(0,0,0,.05);
+  --font:         "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono:         ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--wash);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: inherit; }
+
+/* ---------------- top bar ---------------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(247,247,246,.86);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--ink);
+  color: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.brand-name { font-weight: 700; font-size: 17px; letter-spacing: -.01em; }
+
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.pill-solid {
+  background: var(--ink);
+  color: #fff;
+  border: 1px solid var(--ink);
+  cursor: pointer;
+  transition: transform .12s ease, opacity .12s ease;
+}
+.pill-solid:hover { opacity: .88; }
+.pill-solid:active { transform: translateY(1px); }
+
+.pill-quiet {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+/* ---------------- page + hero ---------------- */
+
+.page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 56px 28px 72px;
+}
+
+.hero { max-width: 720px; margin-bottom: 44px; }
+
+.eyebrow {
+  margin: 0 0 14px;
+  color: var(--muted-2);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-size: clamp(38px, 6vw, 64px);
+  line-height: 1.02;
+  letter-spacing: -.035em;
+  font-weight: 700;
+}
+
+.lede {
+  margin: 0;
+  max-width: 560px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+/* ---------------- workspace layout ---------------- */
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 366px;
+  gap: 24px;
+  align-items: start;
+}
+
+.canvas-card { min-width: 0; }
+
+.canvas-card,
+.panel {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ---------------- canvas head ---------------- */
+
+.canvas-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--paper-3);
+  border-radius: 10px;
+}
+
+.seg-btn {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 7px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.seg-btn.is-active {
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(0,0,0,.08);
+}
+
+.canvas-head-right { display: flex; align-items: center; gap: 6px; }
+
+.change-counter {
+  font-size: 13px;
+  color: var(--muted);
+  padding-right: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink-2);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.ghost-btn:hover { background: var(--paper-3); }
+.ghost-btn:disabled { opacity: .38; cursor: default; }
+
+/* ---------------- write mode ---------------- */
+
+.pane-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.pane { display: flex; flex-direction: column; min-width: 0; }
+.pane + .pane { border-left: 1px solid var(--line); }
+
+.pane-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-2);
+}
+
+.pane-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.pane-meta { font-size: 12.5px; color: var(--muted-2); font-variant-numeric: tabular-nums; }
+
+.editor {
+  border: 0;
+  outline: 0;
+  resize: none;
+  padding: 22px;
+  min-height: 460px;
+  font-family: var(--font);
+  font-size: 15.5px;
+  line-height: 1.72;
+  color: var(--ink-2);
+  background: transparent;
+}
+
+.editor::placeholder { color: #bdbdbd; }
+
+/* ---------------- diff mode ---------------- */
+
+.diff-view { display: flex; flex-direction: column; }
+
+.diff-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-2);
+}
+
+.diff-head-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 18px;
+}
+.diff-head-cell + .diff-head-cell { border-left: 1px solid var(--line); }
+
+.diff-view.is-unified .diff-head { grid-template-columns: 1fr; }
+.diff-view.is-unified .diff-head-cell:first-child { gap: 8px; }
+.diff-view.is-unified .diff-head-cell:first-child .tag-del { margin-left: auto; }
+.diff-view.is-unified .diff-head-cell:nth-child(2) { display: none; }
+
+.tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.tag-del { text-decoration: line-through; text-decoration-thickness: 1px; }
+.tag-ins { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+.diff-body {
+  min-height: 460px;
+  max-height: 72vh;
+  overflow: auto;
+}
+
+/* --- a diff row: gutter | left | gutter | right --- */
+
+.row {
+  display: grid;
+  grid-template-columns: 34px minmax(0,1fr) 34px minmax(0,1fr);
+  border-bottom: 1px solid #f1f1f1;
+}
+.row:last-child { border-bottom: 0; }
+
+.cell {
+  padding: 12px 18px 12px 8px;
+  font-size: 15.5px;
+  line-height: 1.72;
+  color: var(--ink-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.cell.side-b { border-left: 1px solid var(--line); padding-left: 8px; }
+
+.gutter {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted-2);
+  padding: 13px 0 0 12px;
+  user-select: none;
+}
+
+.gutter.g-del { color: var(--ink); font-weight: 700; }
+.gutter.g-ins { color: var(--ink); font-weight: 700; }
+
+.cell.is-empty { background: repeating-linear-gradient(135deg, #fdfdfd, #fdfdfd 7px, #f7f7f6 7px, #f7f7f6 14px); }
+
+.row.r-del .cell.side-a,
+.row.r-ins .cell.side-b,
+.row.r-mod .cell { background: #fcfcfc; }
+
+.row.r-del .cell.side-a { box-shadow: inset 3px 0 0 var(--muted-2); }
+.row.r-ins .cell.side-b { box-shadow: inset 3px 0 0 var(--ink); }
+.row.r-mod .cell.side-a { box-shadow: inset 3px 0 0 var(--line-strong); }
+.row.r-mod .cell.side-b { box-shadow: inset 3px 0 0 var(--ink); }
+
+.row.is-focused { background: #f6f6f5; }
+
+/* unified (stacked) mode */
+.diff-view.is-unified .row { grid-template-columns: 34px minmax(0,1fr); }
+.diff-view.is-unified .row .gutter.g-a,
+.diff-view.is-unified .row .gutter.g-b { grid-column: 1; }
+.diff-view.is-unified .row .cell.side-a,
+.diff-view.is-unified .row .cell.side-b { grid-column: 2; }
+.diff-view.is-unified .row .cell.side-b { border-left: 0; padding-left: 8px; }
+.diff-view.is-unified .row.r-eq .gutter.g-b,
+.diff-view.is-unified .row.r-eq .cell.side-b,
+.diff-view.is-unified .row .cell.is-empty,
+.diff-view.is-unified .row.r-del .gutter.g-b,
+.diff-view.is-unified .row.r-ins .gutter.g-a { display: none; }
+.diff-view.is-unified .row.r-mod .cell.side-a { padding-bottom: 4px; }
+.diff-view.is-unified .row.r-mod .cell.side-b { padding-top: 4px; }
+
+/* ---------------- inline marks ---------------- */
+
+.d-del {
+  background: var(--del-bg);
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: #8a8a8a;
+  border-radius: 3px;
+  padding: 1px 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.d-ins {
+  background: var(--ins-bg);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--ink);
+  border-radius: 3px;
+  padding: 1px 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* whole-line additions/removals get a lighter treatment so blocks stay readable */
+.row.r-ins .cell.side-b .d-ins { background: #ededeb; }
+.row.r-del .cell.side-a .d-del { background: #f5f5f4; }
+
+/* ---------------- empty state ---------------- */
+
+.empty-state {
+  min-height: 460px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 40px;
+}
+.empty-title { margin: 0; font-weight: 600; font-size: 16px; }
+.empty-sub { margin: 0 0 10px; color: var(--muted); max-width: 340px; }
+
+/* ---------------- panel ---------------- */
+
+.panel { padding: 22px 20px; position: sticky; top: 84px; }
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.panel-head h2 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+.panel-note { font-size: 13px; color: var(--muted-2); }
+
+.panel-section { padding: 18px 0; border-bottom: 1px solid var(--line); }
+
+.panel-label {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.panel-hint { margin: 12px 0 0; font-size: 13px; color: var(--muted-2); line-height: 1.5; }
+
+.choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 18px 10px;
+  min-height: 92px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .12s ease, background .12s ease;
+}
+.choice:hover { background: var(--paper-2); }
+.choice[aria-pressed="true"] { border-color: var(--ink); background: var(--paper-3); }
+
+.check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  display: none;
+  place-items: center;
+}
+.choice[aria-pressed="true"] .check { display: grid; }
+
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.chip {
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  border-radius: 999px;
+  padding: 7px 15px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--ink-2);
+}
+.chip.is-active { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+/* switches */
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  font-size: 14px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.switch-row input { position: absolute; opacity: 0; pointer-events: none; }
+
+.switch {
+  flex: none;
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  background: #dcdcdc;
+  position: relative;
+  transition: background .15s ease;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,.25);
+  transition: transform .15s ease;
+}
+.switch-row input:checked ~ .switch { background: var(--ink); }
+.switch-row input:checked ~ .switch::after { transform: translateX(16px); }
+.switch-row input:focus-visible ~ .switch { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* stats */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.stat {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  background: var(--paper-2);
+}
+.stat-num { display: block; font-size: 21px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.stat-label { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+/* legend */
+.legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 14px; }
+.legend-line { border-left: 3px solid var(--ink); padding-left: 8px; color: var(--ink-2); }
+
+/* actions */
+.panel-actions { display: grid; gap: 8px; padding-top: 18px; }
+
+.btn {
+  height: 42px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .12s ease, background .12s ease, transform .12s ease;
+}
+.btn:hover { background: var(--paper-3); }
+.btn:active { transform: translateY(1px); }
+.btn-dark { background: var(--ink); border-color: var(--ink); color: #fff; }
+.btn-dark:hover { background: #000; }
+.btn-quiet { border-color: transparent; background: transparent; color: var(--muted); font-weight: 500; }
+.btn-quiet:hover { background: var(--paper-3); }
+
+.panel-foot { margin: 14px 0 0; font-size: 12.5px; color: var(--muted-2); text-align: center; line-height: 1.7; }
+.kbd-hint { color: #b4b4b4; }
+
+/* ---------------- footer + toast ---------------- */
+
+.footer {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 26px 28px 48px;
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted-2);
+  font-size: 13px;
+  border-top: 1px solid var(--line);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 60;
+  box-shadow: 0 8px 30px rgba(0,0,0,.25);
+}
+
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 6px; }
+
+/* ---------------- responsive ---------------- */
+
+@media (max-width: 1080px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .panel { position: static; }
+}
+
+@media (max-width: 720px) {
+  .page { padding: 34px 16px 56px; }
+  .topbar-inner { padding: 12px 16px; }
+  .pill-quiet { display: none; }
+  .pane-grid { grid-template-columns: 1fr; }
+  .canvas-head { flex-wrap: wrap; row-gap: 8px; }
+  .canvas-head-right { flex-wrap: wrap; }
+  .ghost-btn span, .ghost-btn { font-size: 12.5px; }
+  .change-counter { font-size: 12.5px; }
+  .pane + .pane { border-left: 0; border-top: 1px solid var(--line); }
+  .editor { min-height: 240px; }
+  .diff-head { grid-template-columns: 1fr; }
+  .diff-head-cell:nth-child(2) { display: none; }
+  .row, .diff-view.is-unified .row { grid-template-columns: 28px minmax(0,1fr); }
+  .row .gutter.g-a, .row .gutter.g-b { grid-column: 1; }
+  .row .cell.side-a, .row .cell.side-b { grid-column: 2; }
+  .row .cell.side-b { border-left: 0; padding-left: 8px; }
+  .row.r-eq .gutter.g-b,
+  .row.r-eq .cell.side-b,
+  .row .cell.is-empty,
+  .row.r-del .gutter.g-b,
+  .row.r-ins .gutter.g-a { display: none; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media print {
+  .topbar, .panel, .footer, .canvas-head { display: none; }
+  body { background: #fff; }
+  .diff-body { max-height: none; overflow: visible; }
+}
+
+</style>
 </head>
 <body>
 
@@ -155,8 +797,11 @@
           <input type="checkbox" id="optPunct" />
           <span class="switch" aria-hidden="true"></span>
         </label>
+      </div>
+
+      <div class="panel-section">
         <label class="switch-row">
-          <span>Unchanged lines</span>
+          <span>Show only the lines that changed</span>
           <input type="checkbox" id="optOnlyChanges" />
           <span class="switch" aria-hidden="true"></span>
         </label>
@@ -212,7 +857,710 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-<script src="diff.js"></script>
-<script src="app.js"></script>
+<script>
+/* ============================================================
+   Redline diff engine
+   ------------------------------------------------------------
+   Pure functions, no DOM. Produces aligned rows of the shape:
+
+     { type: 'eq' | 'mod' | 'del' | 'ins',
+       a: string|null, b: string|null,
+       aHtml: string,  bHtml: string }
+
+   plus a stats object for the summary panel.
+   ============================================================ */
+
+var Redline = (function () {
+  'use strict';
+
+  var PUNCT = /[.,!?;:—–\-"'“”‘’()\[\]{}…/\\]/g;
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  /* ---------- tokenising ---------- */
+
+  // Word mode keeps whitespace runs as their own tokens so the original
+  // spacing survives a round trip through the diff.
+  function tokenize(line, granularity) {
+    if (granularity === 'char') return line.split('');
+    return line.match(/\s+|[^\s]+/g) || [];
+  }
+
+  function normalizeToken(tok, opts) {
+    if (/^\s+$/.test(tok)) return ' ';
+    var t = tok;
+    if (opts.ignoreCase) t = t.toLowerCase();
+    if (opts.ignorePunctuation) t = t.replace(PUNCT, '');
+    return t;
+  }
+
+  function normalizeLine(line, opts) {
+    var t = line.replace(/\s+/g, ' ').trim();
+    if (opts.ignoreCase) t = t.toLowerCase();
+    if (opts.ignorePunctuation) t = t.replace(PUNCT, '');
+    return t;
+  }
+
+  function isWord(tok) {
+    return /[^\s]/.test(tok);
+  }
+
+  function countWords(text) {
+    var m = String(text).trim().match(/\S+/g);
+    return m ? m.length : 0;
+  }
+
+  /* ---------- generic LCS over two token arrays ---------- */
+
+  // Returns ops: [{ op: '=' | '-' | '+', a: token|null, b: token|null }]
+  function lcsDiff(a, b, keyOf) {
+    var n = a.length, m = b.length;
+    var ops = [];
+
+    if (!n && !m) return ops;
+    if (!n) { for (var q = 0; q < m; q++) ops.push({ op: '+', a: null, b: b[q] }); return ops; }
+    if (!m) { for (var p = 0; p < n; p++) ops.push({ op: '-', a: a[p], b: null }); return ops; }
+
+    // Trim the common head/tail first — cheap, and it keeps the DP table small
+    // for the usual case of a lightly edited paragraph.
+    var head = 0;
+    while (head < n && head < m && keyOf(a[head]) === keyOf(b[head])) head++;
+    var tail = 0;
+    while (tail < n - head && tail < m - head &&
+           keyOf(a[n - 1 - tail]) === keyOf(b[m - 1 - tail])) tail++;
+
+    for (var h = 0; h < head; h++) ops.push({ op: '=', a: a[h], b: b[h] });
+
+    var midA = a.slice(head, n - tail);
+    var midB = b.slice(head, m - tail);
+    var na = midA.length, nb = midB.length;
+
+    if (na && nb) {
+      if (na * nb > 4000000) {
+        // Guard against pathological input: treat the middle as a wholesale
+        // replacement rather than allocating a huge table.
+        for (var x = 0; x < na; x++) ops.push({ op: '-', a: midA[x], b: null });
+        for (var y = 0; y < nb; y++) ops.push({ op: '+', a: null, b: midB[y] });
+      } else {
+        var ka = new Array(na), kb = new Array(nb);
+        for (var i0 = 0; i0 < na; i0++) ka[i0] = keyOf(midA[i0]);
+        for (var j0 = 0; j0 < nb; j0++) kb[j0] = keyOf(midB[j0]);
+
+        var dp = [];
+        for (var i = 0; i <= na; i++) dp.push(new Uint32Array(nb + 1));
+        for (var i1 = na - 1; i1 >= 0; i1--) {
+          for (var j1 = nb - 1; j1 >= 0; j1--) {
+            dp[i1][j1] = ka[i1] === kb[j1]
+              ? dp[i1 + 1][j1 + 1] + 1
+              : Math.max(dp[i1 + 1][j1], dp[i1][j1 + 1]);
+          }
+        }
+        var i2 = 0, j2 = 0;
+        while (i2 < na && j2 < nb) {
+          if (ka[i2] === kb[j2]) { ops.push({ op: '=', a: midA[i2], b: midB[j2] }); i2++; j2++; }
+          else if (dp[i2 + 1][j2] >= dp[i2][j2 + 1]) { ops.push({ op: '-', a: midA[i2], b: null }); i2++; }
+          else { ops.push({ op: '+', a: null, b: midB[j2] }); j2++; }
+        }
+        while (i2 < na) { ops.push({ op: '-', a: midA[i2], b: null }); i2++; }
+        while (j2 < nb) { ops.push({ op: '+', a: null, b: midB[j2] }); j2++; }
+      }
+    } else if (na) {
+      for (var x2 = 0; x2 < na; x2++) ops.push({ op: '-', a: midA[x2], b: null });
+    } else if (nb) {
+      for (var y2 = 0; y2 < nb; y2++) ops.push({ op: '+', a: null, b: midB[y2] });
+    }
+
+    for (var t = tail; t > 0; t--) {
+      ops.push({ op: '=', a: a[n - t], b: b[m - t] });
+    }
+    return ops;
+  }
+
+  /* ---------- inline (within-line) diff ---------- */
+
+  function inlineDiff(lineA, lineB, opts) {
+    var ta = tokenize(lineA, opts.granularity);
+    var tb = tokenize(lineB, opts.granularity);
+    var ops = lcsDiff(ta, tb, function (tok) { return normalizeToken(tok, opts); });
+
+    var left = '', right = '', added = 0, removed = 0, kept = 0;
+    var i = 0;
+
+    while (i < ops.length) {
+      var op = ops[i].op;
+      // Collect the whole run so one <del>/<ins> can wrap several tokens.
+      var buf = '';
+      var j = i;
+      while (j < ops.length && ops[j].op === op) {
+        buf += (op === '+' ? ops[j].b : ops[j].a);
+        if (op === '+' && isWord(ops[j].b)) added++;
+        if (op === '-' && isWord(ops[j].a)) removed++;
+        if (op === '=' && isWord(ops[j].a)) kept++;
+        j++;
+      }
+      var html = escapeHtml(buf);
+      if (op === '=') { left += html; right += html; }
+      else if (op === '-') { if (buf.trim()) left += '<del class="d-del">' + html + '</del>'; else left += html; }
+      else { if (buf.trim()) right += '<ins class="d-ins">' + html + '</ins>'; else right += html; }
+      i = j;
+    }
+
+    return { left: left, right: right, added: added, removed: removed, kept: kept };
+  }
+
+  /* ---------- line similarity, used to pair rewrites ---------- */
+
+  function bagOf(line, opts) {
+    var toks = (normalizeLine(line, opts).match(/\S+/g) || []);
+    var bag = Object.create(null);
+    for (var i = 0; i < toks.length; i++) bag[toks[i]] = (bag[toks[i]] || 0) + 1;
+    return { bag: bag, size: toks.length };
+  }
+
+  function similarity(lineA, lineB, opts) {
+    var A = bagOf(lineA, opts), B = bagOf(lineB, opts);
+    if (!A.size || !B.size) return 0;
+    var shared = 0;
+    for (var k in A.bag) {
+      if (B.bag[k]) shared += Math.min(A.bag[k], B.bag[k]);
+    }
+    return shared / Math.max(A.size, B.size);
+  }
+
+  /* ---------- pair a run of deletions with a run of insertions ---------- */
+
+  // Order-preserving alignment that maximises total similarity. Pairs below
+  // the threshold stay unpaired, so a genuinely new line reads as new rather
+  // than as a garbled edit of an unrelated one.
+  function pairRuns(dels, inss, opts) {
+    var n = dels.length, m = inss.length;
+    var THRESH = 0.25;
+    var sim = [];
+    for (var i = 0; i < n; i++) {
+      sim.push([]);
+      for (var j = 0; j < m; j++) sim[i].push(similarity(dels[i], inss[j], opts));
+    }
+
+    var dp = [];
+    for (var a = 0; a <= n; a++) dp.push(new Float64Array(m + 1));
+    for (var i2 = n - 1; i2 >= 0; i2--) {
+      for (var j2 = m - 1; j2 >= 0; j2--) {
+        var pair = sim[i2][j2] >= THRESH ? sim[i2][j2] + dp[i2 + 1][j2 + 1] : -1;
+        dp[i2][j2] = Math.max(pair, dp[i2 + 1][j2], dp[i2][j2 + 1]);
+      }
+    }
+
+    var rows = [], i3 = 0, j3 = 0;
+    while (i3 < n && j3 < m) {
+      var pairScore = sim[i3][j3] >= THRESH ? sim[i3][j3] + dp[i3 + 1][j3 + 1] : -1;
+      if (pairScore >= dp[i3][j3] - 1e-9 && pairScore >= 0) {
+        rows.push({ type: 'mod', a: dels[i3], b: inss[j3] });
+        i3++; j3++;
+      } else if (dp[i3 + 1][j3] >= dp[i3][j3 + 1]) {
+        rows.push({ type: 'del', a: dels[i3], b: null });
+        i3++;
+      } else {
+        rows.push({ type: 'ins', a: null, b: inss[j3] });
+        j3++;
+      }
+    }
+    while (i3 < n) { rows.push({ type: 'del', a: dels[i3], b: null }); i3++; }
+    while (j3 < m) { rows.push({ type: 'ins', a: null, b: inss[j3] }); j3++; }
+    return rows;
+  }
+
+  /* ---------- public API ---------- */
+
+  function splitLines(text) {
+    return String(text)
+      .replace(/\r\n?/g, '\n')
+      .split('\n')
+      .map(function (l) { return l.replace(/\s+$/, ''); })
+      .filter(function (l) { return l.trim().length > 0; });
+  }
+
+  function compare(leftText, rightText, options) {
+    var opts = {
+      granularity: (options && options.granularity) || 'word',
+      ignoreCase: !!(options && options.ignoreCase),
+      ignorePunctuation: !!(options && options.ignorePunctuation)
+    };
+
+    var la = splitLines(leftText);
+    var lb = splitLines(rightText);
+
+    var lineOps = lcsDiff(la, lb, function (l) { return normalizeLine(l, opts); });
+
+    // Collapse del-runs immediately followed by ins-runs into paired rewrites.
+    var rows = [];
+    var i = 0;
+    while (i < lineOps.length) {
+      if (lineOps[i].op === '=') {
+        rows.push({ type: 'eq', a: lineOps[i].a, b: lineOps[i].b });
+        i++;
+        continue;
+      }
+      var dels = [], inss = [];
+      while (i < lineOps.length && lineOps[i].op === '-') { dels.push(lineOps[i].a); i++; }
+      while (i < lineOps.length && lineOps[i].op === '+') { inss.push(lineOps[i].b); i++; }
+      if (dels.length && inss.length) {
+        rows = rows.concat(pairRuns(dels, inss, opts));
+      } else {
+        dels.forEach(function (d) { rows.push({ type: 'del', a: d, b: null }); });
+        inss.forEach(function (n2) { rows.push({ type: 'ins', a: null, b: n2 }); });
+      }
+    }
+
+    // Render each row and tally the stats.
+    var stats = { added: 0, removed: 0, kept: 0, rowsChanged: 0, rows: rows.length };
+
+    rows.forEach(function (row) {
+      if (row.type === 'eq') {
+        row.aHtml = escapeHtml(row.a);
+        row.bHtml = escapeHtml(row.b);
+        stats.kept += countWords(row.a);
+      } else if (row.type === 'mod') {
+        var d = inlineDiff(row.a, row.b, opts);
+        row.aHtml = d.left;
+        row.bHtml = d.right;
+        stats.added += d.added;
+        stats.removed += d.removed;
+        stats.kept += d.kept;
+        stats.rowsChanged++;
+      } else if (row.type === 'del') {
+        row.aHtml = '<del class="d-del">' + escapeHtml(row.a) + '</del>';
+        row.bHtml = '';
+        stats.removed += countWords(row.a);
+        stats.rowsChanged++;
+      } else {
+        row.aHtml = '';
+        row.bHtml = '<ins class="d-ins">' + escapeHtml(row.b) + '</ins>';
+        stats.added += countWords(row.b);
+        stats.rowsChanged++;
+      }
+    });
+
+    var originalWords = countWords(leftText);
+    stats.keptPct = originalWords ? Math.round((stats.kept / originalWords) * 100) : 0;
+    stats.wordsLeft = originalWords;
+    stats.wordsRight = countWords(rightText);
+
+    return { rows: rows, stats: stats };
+  }
+
+  return {
+    compare: compare,
+    countWords: countWords,
+    splitLines: splitLines,
+    escapeHtml: escapeHtml,
+    _internal: { lcsDiff: lcsDiff, similarity: similarity, inlineDiff: inlineDiff }
+  };
+})();
+
+if (typeof module !== 'undefined' && module.exports) module.exports = Redline;
+
+</script>
+<script>
+/* ============================================================
+   Redline — UI wiring
+   ============================================================ */
+
+(function () {
+  'use strict';
+
+  /* ---------- demo content (sample copy, not customer text) ---------- */
+
+  var DEMO_ORIGINAL = [
+    'At every shift change someone on the support team picks up the open tickets, re-reads the history, updates the status board, and keeps the handoff notes current. One team lead described it plainly: at a larger company those tasks belong to three different roles. On a small team one person owns the entire handoff.',
+    '',
+    'That handoff is where new hires most often feel unprepared. The training documents cover the policy. The timing, the order, and the judgment calls during a busy queue are learned only under supervision.',
+    '',
+    'Teams that treat the handoff as a checked competency — not a quick verbal walkthrough — give new hires a clear path to prove readiness. The ones that assume it is already in place discover the gap later, usually under pressure.',
+    '',
+    'If you onboard someone this month, what specific handoff steps will you watch them complete before you sign off?'
+  ].join('\n');
+
+  var DEMO_UPDATED = [
+    'A large company splits the shift handoff across three roles. A small team hands it to one person.',
+    '',
+    'That person is your new hire.',
+    '',
+    'At every shift change they pick up the open tickets, re-read the history, update the board, and hold the whole thread together. Nobody is checking their work in real time.',
+    '',
+    'Training documents teach the policy.',
+    '',
+    'They do not teach timing.',
+    'They do not teach order under a full queue.',
+    'They do not teach what to do when you are running behind and the notes are half written.',
+    '',
+    'Most new hires know the policy. They have just never run it with someone watching.',
+    '',
+    'Some teams watch the new hire run one full handoff and sign off. Everyone knows where they stand.',
+    '',
+    'The rest find out on the busiest morning, when the board is stale and the queue is already backing up.',
+    '',
+    'If you onboard someone this month, name the exact steps you will watch them complete before you sign off.'
+  ].join('\n');
+
+  /* ---------- element refs ---------- */
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  var inputLeft   = $('inputLeft');
+  var inputRight  = $('inputRight');
+  var metaLeft    = $('metaLeft');
+  var metaRight   = $('metaRight');
+  var editView    = $('editView');
+  var diffView    = $('diffView');
+  var diffBody    = $('diffBody');
+  var emptyState  = $('emptyState');
+  var tabEdit     = $('tabEdit');
+  var tabDiff     = $('tabDiff');
+  var toastEl     = $('toast');
+
+  var state = {
+    mode: 'edit',            // 'edit' | 'diff'
+    layout: 'split',         // 'split' | 'unified'
+    granularity: 'word',
+    ignoreCase: false,
+    ignorePunctuation: false,
+    onlyChanges: false,
+    changeIndex: -1,
+    changeNodes: []
+  };
+
+  /* ---------- helpers ---------- */
+
+  var toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.hidden = true; }, 2200);
+  }
+
+  function debounce(fn, ms) {
+    var t;
+    return function () {
+      var args = arguments, self = this;
+      clearTimeout(t);
+      t = setTimeout(function () { fn.apply(self, args); }, ms);
+    };
+  }
+
+  function updateMeta() {
+    var l = Redline.countWords(inputLeft.value);
+    var r = Redline.countWords(inputRight.value);
+    metaLeft.textContent = l + (l === 1 ? ' word' : ' words');
+    metaRight.textContent = r + (r === 1 ? ' word' : ' words');
+  }
+
+  /* ---------- rendering ---------- */
+
+  var GUTTER = { eq: '', mod: '~', del: '−', ins: '+' };
+
+  function render() {
+    var left = inputLeft.value;
+    var right = inputRight.value;
+
+    if (!left.trim() && !right.trim()) {
+      diffBody.innerHTML = '';
+      diffBody.hidden = true;
+      emptyState.hidden = false;
+      setStats(null);
+      setChangeNav([]);
+      return;
+    }
+
+    diffBody.hidden = false;
+    emptyState.hidden = true;
+
+    var result = Redline.compare(left, right, {
+      granularity: state.granularity,
+      ignoreCase: state.ignoreCase,
+      ignorePunctuation: state.ignorePunctuation
+    });
+
+    var html = '';
+    var visible = 0;
+
+    result.rows.forEach(function (row) {
+      if (state.onlyChanges && row.type === 'eq') return;
+      var isChange = row.type !== 'eq';
+      visible++;
+
+      var gA = row.type === 'del' ? 'g-del' : (row.type === 'mod' ? 'g-mod' : '');
+      var gB = (row.type === 'ins' || row.type === 'mod') ? 'g-ins' : '';
+
+      var aCell = row.aHtml
+        ? '<div class="cell side-a">' + row.aHtml + '</div>'
+        : '<div class="cell side-a is-empty"></div>';
+      var bCell = row.bHtml
+        ? '<div class="cell side-b">' + row.bHtml + '</div>'
+        : '<div class="cell side-b is-empty"></div>';
+
+      html += '<div class="row r-' + row.type + '"' + (isChange ? ' data-change="1"' : '') + '>' +
+                '<div class="gutter g-a ' + gA + '">' + (row.type === 'ins' ? '' : GUTTER[row.type]) + '</div>' +
+                aCell +
+                '<div class="gutter g-b ' + gB + '">' + (row.type === 'del' ? '' : (row.type === 'eq' ? '' : GUTTER[row.type === 'mod' ? 'ins' : row.type])) + '</div>' +
+                bCell +
+              '</div>';
+    });
+
+    if (!visible) {
+      html = '<div class="row"><div class="gutter"></div>' +
+             '<div class="cell" style="grid-column: 2 / -1; color:#6b6b6b;">' +
+             (state.onlyChanges ? 'No changes to show. The two versions read the same.' : 'Nothing to compare yet.') +
+             '</div></div>';
+    }
+
+    diffBody.innerHTML = html;
+    setStats(result.stats);
+    setChangeNav(Array.prototype.slice.call(diffBody.querySelectorAll('[data-change="1"]')));
+  }
+
+  function setStats(stats) {
+    $('statAdded').textContent   = stats ? stats.added : 0;
+    $('statRemoved').textContent = stats ? stats.removed : 0;
+    $('statLines').textContent   = stats ? stats.rowsChanged : 0;
+    $('statKept').textContent    = stats ? stats.keptPct + '%' : '—';
+    $('tagAdded').textContent    = (stats ? stats.added : 0) + ' added';
+    $('tagRemoved').textContent  = (stats ? stats.removed : 0) + ' removed';
+  }
+
+  function setChangeNav(nodes) {
+    state.changeNodes = nodes;
+    state.changeIndex = -1;
+    var counter = $('changeCounter');
+    var show = state.mode === 'diff' && nodes.length > 0;
+    counter.hidden = !show;
+    $('prevChange').hidden = !show;
+    $('nextChange').hidden = !show;
+    if (show) counter.textContent = nodes.length + (nodes.length === 1 ? ' change' : ' changes');
+  }
+
+  function gotoChange(step) {
+    var nodes = state.changeNodes;
+    if (!nodes.length) return;
+    state.changeIndex = (state.changeIndex + step + nodes.length) % nodes.length;
+    nodes.forEach(function (n) { n.classList.remove('is-focused'); });
+    var el = nodes[state.changeIndex];
+    el.classList.add('is-focused');
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    $('changeCounter').textContent = (state.changeIndex + 1) + ' of ' + nodes.length;
+  }
+
+  /* ---------- mode + layout ---------- */
+
+  function setMode(mode) {
+    state.mode = mode;
+    var diff = mode === 'diff';
+    editView.hidden = diff;
+    diffView.hidden = !diff;
+    tabEdit.classList.toggle('is-active', !diff);
+    tabDiff.classList.toggle('is-active', diff);
+    tabEdit.setAttribute('aria-selected', String(!diff));
+    tabDiff.setAttribute('aria-selected', String(diff));
+    if (diff) render(); else setChangeNav([]);
+  }
+
+  // Stacked layouts (chosen, or forced by a narrow screen) show one header,
+  // so both tallies have to live in the first cell.
+  var narrow = window.matchMedia('(max-width: 720px)');
+
+  function updateHeadLabels() {
+    var stacked = state.layout === 'unified' || narrow.matches;
+    var cells = document.querySelectorAll('.diff-head-cell');
+    var tagAdded = $('tagAdded');
+    if (stacked) {
+      cells[0].querySelector('.pane-title').textContent = 'Original \u2192 Updated';
+      cells[0].appendChild(tagAdded);
+    } else {
+      cells[0].querySelector('.pane-title').textContent = 'Original';
+      cells[1].appendChild(tagAdded);
+    }
+  }
+
+  function setLayout(layout) {
+    state.layout = layout;
+    diffView.classList.toggle('is-unified', layout === 'unified');
+
+    updateHeadLabels();
+
+    $('viewSplit').setAttribute('aria-pressed', String(layout === 'split'));
+    $('viewUnified').setAttribute('aria-pressed', String(layout === 'unified'));
+    $('viewHint').textContent = layout === 'split'
+      ? 'Two columns. Original on the left, rewrite on the right, aligned line for line.'
+      : 'One column. Each change reads top to bottom: what was cut, then what replaced it.';
+  }
+
+  /* ---------- report ---------- */
+
+  function buildReport() {
+    var result = Redline.compare(inputLeft.value, inputRight.value, {
+      granularity: state.granularity,
+      ignoreCase: state.ignoreCase,
+      ignorePunctuation: state.ignorePunctuation
+    });
+    var lines = [
+      'REDLINE — comparison report',
+      '',
+      result.stats.added + ' words added  |  ' + result.stats.removed + ' words removed  |  ' +
+      result.stats.rowsChanged + ' lines touched  |  ' + result.stats.keptPct + '% of the original wording kept',
+      '',
+      '----------------------------------------',
+      ''
+    ];
+    result.rows.forEach(function (row) {
+      if (row.type === 'eq') { lines.push('   ' + row.a); }
+      else if (row.type === 'del') { lines.push(' - ' + row.a); }
+      else if (row.type === 'ins') { lines.push(' + ' + row.b); }
+      else { lines.push(' - ' + row.a); lines.push(' + ' + row.b); }
+      lines.push('');
+    });
+    return lines.join('\n');
+  }
+
+  function copyReport() {
+    if (!inputLeft.value.trim() && !inputRight.value.trim()) {
+      toast('Nothing to copy yet');
+      return;
+    }
+    var text = buildReport();
+    var done = function () { toast('Report copied to your clipboard'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+    } else {
+      fallbackCopy(text, done);
+    }
+  }
+
+  function fallbackCopy(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { toast('Copy failed — select the text manually'); }
+    document.body.removeChild(ta);
+  }
+
+  /* ---------- actions ---------- */
+
+  function loadDemo(announce) {
+    inputLeft.value = DEMO_ORIGINAL;
+    inputRight.value = DEMO_UPDATED;
+    updateMeta();
+    setMode('diff');
+    if (announce) toast('Demo loaded — this is sample copy, not your text');
+  }
+
+  function clearBoth() {
+    inputLeft.value = '';
+    inputRight.value = '';
+    updateMeta();
+    setMode('edit');
+    render();
+    inputLeft.focus();
+    toast('Cleared');
+  }
+
+  function swapSides() {
+    var tmp = inputLeft.value;
+    inputLeft.value = inputRight.value;
+    inputRight.value = tmp;
+    updateMeta();
+    if (state.mode === 'diff') render();
+    toast('Sides swapped');
+  }
+
+  /* ---------- events ---------- */
+
+  var onInput = debounce(function () {
+    updateMeta();
+    if (state.mode === 'diff') render();
+  }, 180);
+
+  inputLeft.addEventListener('input', onInput);
+  inputRight.addEventListener('input', onInput);
+
+  tabEdit.addEventListener('click', function () { setMode('edit'); });
+  tabDiff.addEventListener('click', function () { setMode('diff'); });
+
+  $('compareBtn').addEventListener('click', function () {
+    if (!inputLeft.value.trim() && !inputRight.value.trim()) {
+      toast('Add text to both sides first');
+      setMode('edit');
+      inputLeft.focus();
+      return;
+    }
+    setMode('diff');
+  });
+
+  $('demoBtn').addEventListener('click', function () { loadDemo(true); });
+  $('demoTopBtn').addEventListener('click', function () { loadDemo(true); });
+  $('demoEmptyBtn').addEventListener('click', function () { loadDemo(true); });
+  $('clearBtn').addEventListener('click', clearBoth);
+  $('copyBtn').addEventListener('click', copyReport);
+  $('swapBtn').addEventListener('click', swapSides);
+
+  $('viewSplit').addEventListener('click', function () { setLayout('split'); });
+  $('viewUnified').addEventListener('click', function () { setLayout('unified'); });
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-granularity]'), function (chip) {
+    chip.addEventListener('click', function () {
+      state.granularity = chip.getAttribute('data-granularity');
+      Array.prototype.forEach.call(document.querySelectorAll('[data-granularity]'), function (c) {
+        c.classList.toggle('is-active', c === chip);
+      });
+      if (state.mode === 'diff') render();
+    });
+  });
+
+  $('optCase').addEventListener('change', function (e) {
+    state.ignoreCase = e.target.checked;
+    if (state.mode === 'diff') render();
+  });
+  $('optPunct').addEventListener('change', function (e) {
+    state.ignorePunctuation = e.target.checked;
+    if (state.mode === 'diff') render();
+  });
+  $('optOnlyChanges').addEventListener('change', function (e) {
+    state.onlyChanges = e.target.checked;
+    if (state.mode === 'diff') render();
+  });
+
+  $('nextChange').addEventListener('click', function () { gotoChange(1); });
+  $('prevChange').addEventListener('click', function () { gotoChange(-1); });
+
+  document.addEventListener('keydown', function (e) {
+    var typing = e.target === inputLeft || e.target === inputRight;
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      setMode(state.mode === 'diff' ? 'edit' : 'diff');
+      return;
+    }
+    if (typing || state.mode !== 'diff') return;
+    if (e.key === 'j' || e.key === 'ArrowDown') { e.preventDefault(); gotoChange(1); }
+    if (e.key === 'k' || e.key === 'ArrowUp') { e.preventDefault(); gotoChange(-1); }
+  });
+
+  if (narrow.addEventListener) narrow.addEventListener('change', updateHeadLabels);
+  else if (narrow.addListener) narrow.addListener(updateHeadLabels);
+
+  /* ---------- boot: demo is shown by default ---------- */
+
+  setLayout('split');
+  loadDemo(false);
+})();
+
+</script>
 </body>
 </html>
